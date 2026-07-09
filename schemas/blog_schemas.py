@@ -12,6 +12,7 @@ class BlogUpdate(BaseModel):
     title: str | None = Field(min_length=1, max_length=100)
     content: str | None = None
 
+
 class BlogResponse(BaseModel):
     id: int
     user_id: int
@@ -29,6 +30,8 @@ class BlogEditResponse(BaseModel):
     status: str
     message: str
     blog: BlogResponse
-    
-class AIBlogPost(BaseModel):
-    blog: str
+
+
+class AIBlogResponse(BaseModel):
+    title: str
+    content: str

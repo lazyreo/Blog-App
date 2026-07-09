@@ -1,4 +1,5 @@
 
+
 from datetime import datetime
 
 from sqlalchemy.orm import (
@@ -15,6 +16,7 @@ from sqlalchemy import (
     func
 )
 
+from .user_model import User
 
 from .base import Base
 
@@ -24,8 +26,6 @@ class Blog(Base):
 
     id: Mapped[int] = mapped_column(
         primary_key=True,
-        unique=True,
-        nullable=False
     )
 
     user_id: Mapped[int] = mapped_column(
@@ -36,16 +36,34 @@ class Blog(Base):
     title: Mapped[str] = mapped_column(String(255), nullable=False)
 
     slug: Mapped[str] = mapped_column(
-        String,
+        String(255),
         unique=True,
         nullable=False
     )
 
-    content: Mapped[str] = mapped_column(Text)
+    content: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+    )
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now()
     )
 
-    user = relationship("User", back_populates="blogs", lazy="raise")
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    url: Mapped[str | None] = mapped_column(
+        String(500),
+        unique=True,
+        index=True,
+        nullable=True,
+    )
+
+    user: Mapped["User"] = relationship(
+        back_populates="blogs"
+    )

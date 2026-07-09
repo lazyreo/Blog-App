@@ -1,8 +1,7 @@
 
-from models.blog_model import Blog
-
 from sqlalchemy import (
     delete,
+    exists,
     or_,
     select
 )
@@ -11,10 +10,8 @@ from slugify import slugify
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from models import (
-    blog_model
-)
 from models.user_model import User
+from models.blog_model import Blog
 
 from schemas.blog_schemas import BlogPost, BlogUpdate
 
@@ -51,6 +48,14 @@ async def generate_slug(
 
         counter += 1
 
+
+async def is_slug_exists(db: AsyncSession, title: str):
+    base_slug = slugify(title)
+
+    is_exists = (await db.execute(select(exists().where(Blog.slug == base_slug)))).scalar_one_or_none()
+
+    return is_exists
+
 # Read all blogs
 
 
@@ -78,31 +83,37 @@ async def get_blogs(
 
 async def get_blog(
     db: AsyncSession,
-    id: int | None = None,
-    slug: str | None = None
+    blog_id: int | None = None,
+    user_id: int | None = None,
+    slug: str | None = None,
+    url: str | None = None
 
 ) -> Blog | None:
 
-    if id is not None:
-        result = await db.execute(
-            select(
-                blog_model.Blog
-            ).where(
-                blog_model.Blog.id == id
-            )
-        )
+    conditions = []
 
-    elif slug is not None:
-        result = await db.execute(
-            select(
-                blog_model.Blog
-            ).where(
-                blog_model.Blog.slug == slug
-            )
-        )
+    if blog_id is not None:
+        conditions.append(Blog.id == blog_id)
+
+    if user_id is not None:
+        conditions.append(Blog.user_id == user_id)
+
+    if slug is not None:
+        conditions.append(Blog.slug == slug)
+
+    if url is not None:
+        conditions.append(Blog.url == url)
 
     else:
         return None
+
+    result = await db.execute(
+        select(
+            Blog
+        ).where(
+            *conditions
+        )
+    )
 
     return result.scalar_one_or_none()
 
@@ -172,9 +183,9 @@ async def update_blog(
 
     if existing_blog is None:
         return None
-    
+
     title: str | None = updated_blog.title
-    content: str | None= updated_blog.content
+    content: str | None = updated_blog.content
 
     if title:
         existing_blog.title = title
@@ -209,7 +220,7 @@ async def delete_blog(
     )
 
     deleted_blog = result.scalar_one_or_none()
-    
+
     if deleted_blog is None:
         return None
 

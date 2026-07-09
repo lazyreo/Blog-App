@@ -3,7 +3,6 @@ from datetime import datetime
 
 from .base import Base
 
-
 from sqlalchemy.orm import (
     mapped_column,
     Mapped,
@@ -30,19 +29,25 @@ class User(Base):
     email: Mapped[str] = mapped_column(
         String(255),
         unique=True,
-        nullable=False
+        nullable=True
     )
 
     password_hash: Mapped[bytes] = mapped_column(
         nullable=False
     )
-    
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now()
     )
 
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now()
+    )
+
     blogs = relationship(
         "Blog",
         back_populates="user",
-        lazy="raise")
+        cascade="all, delete-orphan")

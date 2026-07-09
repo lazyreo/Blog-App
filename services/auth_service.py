@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 from fastapi.security import OAuth2PasswordRequestForm
 
 from jose import jwt
+from loguru import logger
 
 from app.config import security
 
@@ -22,8 +23,6 @@ from models.user_model import User
 from sqlalchemy.exc import IntegrityError
 
 
-
-
 # Create user
 
 
@@ -33,11 +32,11 @@ async def create_user(
 ) -> user_schemas.UserCreateResponse:
     is_exists = await user_repository.check_user(
         db=db,
-        username=user.username
+        username=user.username,
+        email=user.email
     )
 
     if is_exists:
-        print("Get user didn't work")
         raise UsernameAlreadyTakenException(user.username)
 
     hashed_password = security.hash_password(
@@ -56,7 +55,7 @@ async def create_user(
 
     except IntegrityError:
         await db.rollback()
-        print("DB rollback")
+        logger.exception("DB rollback")
         raise UsernameAlreadyTakenException(user.username)
 
     await db.refresh(db_user)

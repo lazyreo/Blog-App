@@ -50,9 +50,9 @@ async def get_blog(
     db: AsyncSession
 ) -> Blog:
 
-    blog =  await blog_repository.get_blog(
+    blog = await blog_repository.get_blog(
         db,
-        blog_id,
+        blog_id=blog_id,
     )
 
     if blog is None:
@@ -79,16 +79,16 @@ async def update_blog(
     user: User,
     db: AsyncSession,
 ):
-    updated_blog =  await blog_repository.update_blog(
+    updated_blog = await blog_repository.update_blog(
         blog_id,
         updated_blog,
         user,
         db
     )
-    
+
     if updated_blog is None:
         raise BlogIDNotFoundException(blog_id)
-    
+
     return updated_blog
 
 # Delete a blog
@@ -105,10 +105,8 @@ async def delete_blog(
         user,
         db
     )
-    
+
     if deleted_blog is None:
         raise BlogIDNotFoundException(blog_id)
-    
+
     return deleted_blog
-
-

@@ -6,8 +6,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from dependencies.database import get_db
 
-from repositories.bot.web_scrape_repository import get_myanimelist
-
 from schemas.user_schemas import (
     UserCreate,
     UserCreateResponse
@@ -55,17 +53,12 @@ async def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(get_db)
 ):
-    
+
     access_token = await login_user(
         form_data,
         db
     )
-   
+
     return AccessTokenResponse(
         access_token=access_token
     )
-    
-@auth_router.get(
-    "/get-links",)
-async def get_links():
-    return await get_myanimelist()

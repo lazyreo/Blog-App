@@ -6,6 +6,8 @@ from pydantic import EmailStr
 
 from models import user_model
 
+from loguru import logger
+
 # Read a user
 
 
@@ -65,16 +67,13 @@ async def check_user(
 
     if user_id is not None:
         condition = user_model.User.id == user_id
-
     elif username is not None:
         condition = user_model.User.username == username
-
     elif email is not None:
         condition = user_model.User.email == email
-
     else:
         return None
-    
+
     result: Result = await db.execute(
         select(
             exists().where(
@@ -83,4 +82,4 @@ async def check_user(
         )
     )
 
-    return bool(result.scalar())
+    return bool(result.scalar_one_or_none())
